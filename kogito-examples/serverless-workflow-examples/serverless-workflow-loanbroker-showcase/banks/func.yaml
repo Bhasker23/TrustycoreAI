@@ -1,0 +1,32 @@
+specVersion: 0.35.0
+name: loanbroker-bank1
+runtime: node
+registry: ""
+image: dev.local/loanbroker-bank
+imageDigest: ""
+created: 2022-07-01T13:50:18.411323-03:00
+invoke: cloudevent
+build:
+  buildpacks: []
+  builder: pack
+  buildEnvs: []
+run:
+  volumes: []
+  envs:
+  - name: BANK_ID
+    value: '{{ env:BANK_ID }}'
+  - name: MAX_LOAN_AMOUNT
+    value: '{{ env:MAX_LOAN_AMOUNT }}'
+  - name: MIN_CREDIT_SCORE
+    value: '{{ env:MIN_CREDIT_SCORE }}'
+  - name: BASE_RATE
+    value: '{{ env:BASE_RATE }}'
+deploy:
+  namespace: loanbroker-example
+  remote: false
+  annotations: {}
+  options: {}
+  labels: []
+  healthEndpoints:
+    liveness: /health/liveness
+    readiness: /health/readiness

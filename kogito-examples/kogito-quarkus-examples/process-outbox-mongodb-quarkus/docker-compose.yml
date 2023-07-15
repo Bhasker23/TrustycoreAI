@@ -1,0 +1,89 @@
+version: '2'
+services:
+  kafka:
+    image: vectorized/redpanda:v21.11.8
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    command:
+      - redpanda
+      - start
+      - --smp
+      - '1'
+      - --reserve-memory
+      - 0M
+      - --overprovisioned
+      - --node-id
+      - '0'
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://kafka:29092,OUTSIDE://localhost:9092
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    ports:
+      - "9000:9000"
+    links:
+      - kafka
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKERCONNECT: "kafka:29092"
+      JVM_OPTS: "-Xms32M -Xmx64M"
+      SERVER_SERVLET_CONTEXTPATH: "/"
+  mongodb:
+    build: ./mongodb
+    image: kogito/outbox/quarkus/mongodb
+    hostname: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGODB_USER=debezium
+      - MONGODB_PASSWORD=dbz
+  connect:
+    image: quay.io/debezium/connect:${DEBEZIUM_VERSION}
+    ports:
+      - "8083:8083"
+    links:
+      - kafka
+      - mongodb
+    depends_on:
+      - kafka
+      - mongodb
+    environment:
+      - BOOTSTRAP_SERVERS=kafka:29092
+      - GROUP_ID=1
+      - CONFIG_STORAGE_TOPIC=kogito_connect_configs
+      - OFFSET_STORAGE_TOPIC=kogito_connect_offsets
+      - STATUS_STORAGE_TOPIC=kogito_connect_statuses
+  sidecar:
+    build: ./sidecar
+    image: kogito/outbox/quarkus/sidecar
+    links:
+      - connect
+      - mongodb
+    depends_on:
+      - connect
+      - mongodb
+    environment:
+      - MONGODB_HOST=mongodb:27017
+      - MONGODB_RS=rs0
+      - MONGODB_USER=debezium
+      - MONGODB_PASSWORD=dbz
+      - KAFKA_HOST=kafka:29092
+      - CONNECT_HOST=connect:8083
+  kogito:
+    image: org.kie.kogito.examples/process-outbox-mongodb-quarkus:1.0
+    ports:
+      - "8080:8080"
+    links:
+      - mongodb
+    depends_on:
+      - mongodb
+      - sidecar
+    environment:
+      - QUARKUS_MONGODB_CONNECTION_STRING=mongodb://mongodb:27017
+      - QUARKUS_MONGODB_CREDENTIALS_USERNAME=debezium
+      - QUARKUS_MONGODB_CREDENTIALS_PASSWORD=dbz
+      - QUARKUS_MONGODB_CREDENTIALS_AUTH_SOURCE=admin
+      - MONGODB_HOST=mongodb:27017
