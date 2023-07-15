@@ -62,4 +62,52 @@ With your preferred editor, edit the file docker-compose.yaml and replace the li
 
 ## Run :running_man: the docker-compose command   
 `docker-compose up`
-# TrustyAI
+
+with the above command, you will able to see that some data is downloading and pulling.
+On successful pulling, there are some containers created.
+
+![Screenshot (1016)](https://github.com/Bhasker23/TrustycoreAI/assets/101566187/483e43f6-58a9-4932-9170-91f5d1ad29b4)
+ 
+
+### Now the services are available at the following endpoints:
+
+* You can now open localhost:8080/swagger-ui  
+
+
+![Swagger](https://github.com/Bhasker23/TrustycoreAI/assets/101566187/6b7c07c1-754a-46a2-b2d6-8c2399b6941c)
+
+
+
+Execute some POST requests to the LoanEligibility with the following payload.
+
+```
+{
+  "Bribe": 1000,
+  "Client": {
+    "age": 43,
+    "existing payments": 100,
+    "salary": 1950
+  },
+  "Loan": {
+    "duration": 15,
+    "installment": 180
+  },
+  "SupremeDirector": "Yes"
+}
+
+```
+
+You should now see the executions in the AuditUI and the monitoring data in Grafana.  
+
+* ``AuditUI: localhost:1337``
+
+![Kogito](https://github.com/Bhasker23/TrustycoreAI/assets/101566187/e71e9fd2-c4c4-4634-83d2-90977174e065)
+
+
+* `` Grafana: localhost:3000``
+
+![Grafna](https://github.com/Bhasker23/TrustycoreAI/assets/101566187/91e1383f-ea6c-4a31-ad99-034904380a07)
+  
+                                               
+                                                
+                                                
